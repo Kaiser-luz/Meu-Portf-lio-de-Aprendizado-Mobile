@@ -1,21 +1,21 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Competencia } from '../data/competencias';
+import { EventoFestival } from '../data/eventos';
 
 interface Props {
-  item: Competencia;
+  item: EventoFestival;
   isExpandido: boolean;
   aoPressionar: () => void;
 }
 
-export default function CardCompetencia({ item, isExpandido, aoPressionar }: Props) {
+export default function CardEvento({ item, isExpandido, aoPressionar }: Props) {
   return (
     <TouchableOpacity 
-      style={styles.card} 
+      style={[styles.card, { borderLeftColor: item.corDestaque }]} // Cor da borda dinâmica
       onPress={aoPressionar}
       activeOpacity={0.8}
     >
-      <Text style={styles.cardTitulo}>{item.titulo}</Text>
+      <Text style={[styles.cardTitulo, { color: item.corDestaque }]}>{item.titulo}</Text> {/* Cor do título dinâmica */}
       <Text style={styles.cardResumo}>{item.resumo}</Text>
       
       {isExpandido && (
@@ -33,8 +33,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 20,
     marginBottom: 15,
-    borderLeftWidth: 8,
-    borderLeftColor: '#1565C0', // AZUL
+    borderLeftWidth: 8, 
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -44,7 +43,6 @@ const styles = StyleSheet.create({
   cardTitulo: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#8A1538', // GRENÁ
     marginBottom: 5,
   },
   cardResumo: {

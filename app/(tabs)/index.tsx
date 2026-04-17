@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { FlatList, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
 
-import CardCompetencia from '../../components/CardCompetencia';
-import { COMPETENCIAS } from '../../data/competencias';
+// Importando nossos novos dados e componente
+import CardEvento from '../../components/CardEvento';
+import { EVENTOS } from '../../data/eventos';
 
 export default function HomeScreen() {
   const [cardAberto, setCardAberto] = useState<string | null>(null);
@@ -13,18 +14,19 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#8A1538" />
+      {/* StatusBar Vermelha */}
+      <StatusBar barStyle="light-content" backgroundColor="#D32F2F" />
       
       <View style={styles.header}>
-        <Text style={styles.headerText}>Catálogo de Competências</Text>
-        <Text style={styles.subHeader}>Portfólio de Aprendizado Mobile</Text>
+        <Text style={styles.headerText}>Guia de Grandes Festivais</Text>
+        <Text style={styles.subHeader}>Tomorrowland, Rock in Rio e mais!</Text>
       </View>
       
       <FlatList
-        data={COMPETENCIAS}
+        data={EVENTOS}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <CardCompetencia 
+          <CardEvento 
             item={item} 
             isExpandido={cardAberto === item.id}
             aoPressionar={() => alternarCard(item.id)}
@@ -39,16 +41,17 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F5F5F5', // Fundo cinza claro para destacar os cards
   },
   header: {
-    backgroundColor: '#8A1538', // GRENÁ
+    backgroundColor: '#D32F2F', // VERMELHO principal
     paddingVertical: 30,
     paddingHorizontal: 20,
     alignItems: 'center',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     marginBottom: 10,
+    elevation: 5, // Sombra no cabeçalho
   },
   headerText: {
     color: '#FFFFFF',
@@ -56,7 +59,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   subHeader: {
-    color: '#E0E0E0',
+    color: '#FFCDD2', // Vermelho clarinho para o subtítulo
     fontSize: 14,
     marginTop: 5,
   },
