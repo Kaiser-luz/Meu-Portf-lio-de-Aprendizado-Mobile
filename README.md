@@ -1,50 +1,28 @@
-# Welcome to your Expo app 👋
+# Portfolio de Aprendizado Mobile - Eventos e Festivais
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## 📝 Descrição do Projeto
+Este projeto faz parte do meu portfólio de aprendizado em desenvolvimento mobile. O objetivo foi criar uma interface funcional utilizando **React Native** e **Expo**, apresentando uma lista dinâmica de eventos e festivais brasileiros.
 
-## Get started
+## 🚀 Tecnologias Utilizadas
+* **React Native**
+* **Expo SDK 52**
+* **TypeScript**
+* **Expo Router** (Roteamento baseado em arquivos)
 
-1. Install dependencies
+## 📱 Funcionalidades Implementadas
+* **Lista Dinâmica:** Utilização do componente `FlatList` para renderização eficiente de dados.
+* **Interface em Cards:** Exibição de 6 eventos principais com título e descrição personalizada.
+* **Design Responsivo:** Uso de `SafeAreaView` e `StyleSheet` para garantir que o app funcione bem em diferentes dispositivos.
 
-   ```bash
-   npm install
-   ```
+## 📋 Lista de Eventos Incluídos
+1. Rock in Rio
+2. Lollapalooza Brasil
+3. Tomorrowland Brasil
+4. Festa do Peão de Barretos
+5. Carnaval de Salvador
+6. Festival de Inverno de Garanhuns
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 👨‍💻 Desenvolvedor
+* **Nome:** Dereck Felipe Maciel Pereira
+* **Equipe:** [Nome da sua Equipe aqui]
+* **Curso:** Análise e Desenvolvimento de Sistemas / Engenharia de Software
