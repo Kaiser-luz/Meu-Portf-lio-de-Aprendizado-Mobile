@@ -24,5 +24,5 @@ Este projeto faz parte do meu portfólio de aprendizado em desenvolvimento mobil
 
 ## 👨‍💻 Desenvolvedor
 * **Nome:** Dereck Felipe Maciel Pereira
-* **Equipe:** [Nome da sua Equipe aqui]
-* **Curso:** Análise e Desenvolvimento de Sistemas / Engenharia de Software
+* **Equipe:** Jiromso
+* **Curso:** Engenharia de Software
