@@ -46,7 +46,7 @@ export const EVENTOS: EventoFestival[] = [
     resumo: 'Logística de transporte.',
     detalhes: 'Use o trem expresso. Cadastre seu cartão na pulseira com antecedência para evitar filas de comida.',
     data: 'Setembro de 2025',
-    valor: R$ 815 (Inteira)',
+    valor: 'R$ 815 (Inteira)',
     local: 'Interlagos, SP',
     corDestaque: '#388E3C' 
   },
