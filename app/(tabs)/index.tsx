@@ -1,37 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FlatList, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
 
-// Importando nossos novos dados e componente
 import CardEvento from '../../components/CardEvento';
 import { EVENTOS } from '../../data/eventos';
 
 export default function HomeScreen() {
-  const [cardAberto, setCardAberto] = useState<string | null>(null);
-
-  const alternarCard = (id: string) => {
-    setCardAberto(cardAberto === id ? null : id);
-  };
-
   return (
     <SafeAreaView style={styles.container}>
-      {/* StatusBar Vermelha */}
-      <StatusBar barStyle="light-content" backgroundColor="#D32F2F" />
+      <StatusBar barStyle="light-content" backgroundColor="#8A1538" />
       
       <View style={styles.header}>
         <Text style={styles.headerText}>Guia de Grandes Festivais</Text>
-        <Text style={styles.subHeader}>Tomorrowland, Rock in Rio e mais!</Text>
+        <Text style={styles.subHeader}>Dicas de Sobrevivência e Logística</Text>
       </View>
       
       <FlatList
         data={EVENTOS}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <CardEvento 
-            item={item} 
-            isExpandido={cardAberto === item.id}
-            aoPressionar={() => alternarCard(item.id)}
-          />
-        )}
+        // Agora só passamos o "item", sem funções de clique
+        renderItem={({ item }) => <CardEvento item={item} />} 
         contentContainerStyle={styles.lista}
       />
     </SafeAreaView>
@@ -41,30 +28,32 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5', // Fundo cinza claro para destacar os cards
+    backgroundColor: '#F8F9FA',
   },
   header: {
-    backgroundColor: '#D32F2F', // VERMELHO principal
-    paddingVertical: 30,
+    backgroundColor: '#8A1538', // GRENÁ
+    paddingVertical: 35,
     paddingHorizontal: 20,
     alignItems: 'center',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
     marginBottom: 10,
-    elevation: 5, // Sombra no cabeçalho
+    elevation: 8,
   },
   headerText: {
     color: '#FFFFFF',
     fontSize: 24,
     fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
   subHeader: {
-    color: '#FFCDD2', // Vermelho clarinho para o subtítulo
+    color: '#D1D1D1',
     fontSize: 14,
-    marginTop: 5,
+    marginTop: 6,
+    fontWeight: '500',
   },
   lista: {
-    padding: 15,
+    padding: 16,
     paddingBottom: 40,
   },
 });
