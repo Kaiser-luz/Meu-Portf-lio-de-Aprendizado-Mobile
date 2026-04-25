@@ -1,0 +1,10 @@
+components/external-link.tsx(14,8): error TS2322: Type '{ children: ((string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...> | ((state: PressableStateCallbackType) => ReactNode)) & (string | ... 6 more ... | Promise<...>)) | null | undefined; ... 109 more ...; rel: string; }' is not assignable to type 'DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>'.
+  Type '{ children: ((string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...> | ((state: PressableStateCallbackType) => ReactNode)) & (string | ... 6 more ... | Promise<...>)) | null | undefined; ... 109 more ...; rel: string; }' is not assignable to type 'ClassAttributes<HTMLAnchorElement>'.
+    Types of property 'ref' are incompatible.
+      Type 'Ref<View> | undefined' is not assignable to type 'Ref<HTMLAnchorElement> | undefined'.
+        Type '(instance: View | null) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLAnchorElement> | undefined'.
+          Type '(instance: View | null) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLAnchorElement | null) => void | (() => VoidOrUndefinedOnly)'.
+            Types of parameters 'instance' and 'instance' are incompatible.
+              Type 'HTMLAnchorElement | null' is not assignable to type 'View | null'.
+                Type 'HTMLAnchorElement' is not assignable to type 'NativeMethods & ViewComponent'.
+                  Type 'HTMLAnchorElement' is missing the following properties from type 'NativeMethods': measure, measureInWindow, measureLayout, setNativeProps

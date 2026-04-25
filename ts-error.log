@@ -1,0 +1,7 @@
+components/external-link.tsx(2,63): error TS2307: Cannot find module 'expo-web-browser' or its corresponding type declarations.
+components/external-link.tsx(5,66): error TS2314: Generic type 'Href' requires 1 type argument(s).
+components/external-link.tsx(13,7): error TS2322: Type '{ href: any; onPress: (event: any) => Promise<void>; children?: ReactNode; target: string; }' is not assignable to type 'IntrinsicAttributes & LinkProps<any> & { children?: ReactNode; }'.
+  Property 'onPress' does not exist on type 'IntrinsicAttributes & LinkProps<any> & { children?: ReactNode; }'.
+components/external-link.tsx(13,23): error TS7006: Parameter 'event' implicitly has an 'any' type.
+components/ui/icon-symbol.ios.tsx(1,59): error TS2307: Cannot find module 'expo-symbols' or its corresponding type declarations.
+components/ui/icon-symbol.tsx(4,47): error TS2307: Cannot find module 'expo-symbols' or its corresponding type declarations.
