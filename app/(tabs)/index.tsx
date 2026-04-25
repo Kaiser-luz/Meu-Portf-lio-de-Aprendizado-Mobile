@@ -5,44 +5,23 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  View,
+  TouchableOpacity, // Importado para tornar o card clicável
 } from "react-native";
+import { useRouter } from "expo-router"; // Importado para gerenciar a navegação
 
-// Lista de Eventos (Requisito: Lista Dinâmica)
+// Lista de Eventos (Mantendo seus 6 itens originais)
 const EVENTOS = [
-  {
-    id: "1",
-    titulo: "Rock in Rio",
-    desc: "O maior festival de música e entretenimento do mundo.",
-  },
-  {
-    id: "2",
-    titulo: "Lollapalooza Brasil",
-    desc: "Festival de música alternativa e cultura pop.",
-  },
-  {
-    id: "3",
-    titulo: "Tomorrowland Brasil",
-    desc: "O maior festival de música eletrônica do planeta.",
-  },
-  {
-    id: "4",
-    titulo: "Festa do Peão de Barretos",
-    desc: "Referência mundial em rodeio e música sertaneja.",
-  },
-  {
-    id: "5",
-    titulo: "Carnaval de Salvador",
-    desc: "A maior festa popular de rua do mundo.",
-  },
-  {
-    id: "6",
-    titulo: "Festival de Inverno",
-    desc: "Evento multicultural com shows e arte.",
-  },
+  { id: "1", titulo: "Rock in Rio", desc: "O maior festival de música e entretenimento do mundo." },
+  { id: "2", titulo: "Lollapalooza Brasil", desc: "Festival de música alternativa e cultura pop." },
+  { id: "3", titulo: "Tomorrowland Brasil", desc: "O maior festival de música eletrônica do planeta." },
+  { id: "4", titulo: "Festa do Peão de Barretos", desc: "Referência mundial em rodeio e música sertaneja." },
+  { id: "5", titulo: "Carnaval de Salvador", desc: "A maior festa popular de rua do mundo." },
+  { id: "6", titulo: "Festival de Inverno", desc: "Evento multicultural com shows e arte." },
 ];
 
 export default function HomeScreen() {
+  const router = useRouter(); // Inicializa o roteador
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -52,10 +31,23 @@ export default function HomeScreen() {
         data={EVENTOS}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity 
+            style={styles.card} 
+            activeOpacity={0.7} // Adiciona um feedback visual suave ao clicar
+            onPress={() => 
+              router.push({
+                pathname: "/DetalhesItem", // Nome do arquivo de destino
+                params: { 
+                  eventoId: item.id, 
+                  titulo: item.titulo, 
+                  desc: item.desc 
+                }
+              })
+            }
+          >
             <Text style={styles.cardTitle}>{item.titulo}</Text>
             <Text style={styles.cardDesc}>{item.desc}</Text>
-          </View>
+          </TouchableOpacity>
         )}
       />
     </SafeAreaView>
@@ -77,7 +69,6 @@ const styles = StyleSheet.create({
     padding: 20,
     marginVertical: 10,
     marginHorizontal: 20,
-    // Estilização (Requisito do professor)
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
