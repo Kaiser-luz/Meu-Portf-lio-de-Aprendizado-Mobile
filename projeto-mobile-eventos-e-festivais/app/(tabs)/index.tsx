@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 
 type Evento = {
   id: number;
@@ -71,12 +72,27 @@ export default function HomeScreen() {
       </View>
 
       {eventos.map((item) => (
-        <View key={item.id} style={styles.card}>
+        <TouchableOpacity
+          key={item.id}
+          style={styles.card}
+          onPress={() =>
+            router.push({
+              pathname: '/detalhes-item',
+              params: {
+                id: item.id,
+                titulo: item.titulo,
+                data: item.data,
+                local: item.local,
+                descricao: item.descricao,
+              },
+            })
+          }
+        >
           <Text style={styles.cardTitulo}>{item.titulo}</Text>
           <Text style={styles.cardInfo}>Data: {item.data}</Text>
           <Text style={styles.cardInfo}>Local: {item.local}</Text>
           <Text style={styles.cardDescricao}>{item.descricao}</Text>
-        </View>
+        </TouchableOpacity>
       ))}
     </ScrollView>
   );
