@@ -1,46 +1,25 @@
-import { Platform } from 'react-native';
-import { Pressable } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+import { Href, Link } from 'expo-router';
+import { openBrowserAsync, WebBrowserPresentationStyle } from 'expo-web-browser';
 import { type ComponentProps } from 'react';
 
-type WebProps = ComponentProps<'a'> & {
-  href: string;
-  children?: React.ReactNode;
-};
+type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: Href & string };
 
-type NativeProps = Omit<ComponentProps<typeof Pressable>, 'onPress'> & {
-  href: string;
-  children?: React.ReactNode;
-};
-
-export function ExternalLink({
-  href,
-  children,
-  ...webProps
-}: WebProps & NativeProps) {
-  if (Platform.OS === 'web') {
-    const { onPress, ...rest } = webProps as unknown as WebProps;
-    return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        {...rest}
-      >
-        {children}
-      </a>
-    );
-  }
-
-  const { onPress, ...rest } = webProps as unknown as NativeProps;
+export function ExternalLink({ href, ...rest }: Props) {
   return (
-    <Pressable
-      onPress={async () => {
-        await WebBrowser.openBrowserAsync(href);
-      }}
+    <Link
+      target="_blank"
       {...rest}
-    >
-      {children}
-    </Pressable>
+      href={href}
+      onPress={async (event) => {
+        if (process.env.EXPO_OS !== 'web') {
+          // Prevent the default behavior of linking to the default browser on native.
+          event.preventDefault();
+          // Open the link in an in-app browser.
+          await openBrowserAsync(href, {
+            presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
+          });
+        }
+      }}
+    />
   );
 }
