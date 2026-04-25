@@ -5,11 +5,10 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity, // Importado para tornar o card clicável
+  TouchableOpacity,
 } from "react-native";
-import { useRouter } from "expo-router"; // Importado para gerenciar a navegação
+import { useRouter } from "expo-router";
 
-// Lista de Eventos (Mantendo seus 6 itens originais)
 const EVENTOS = [
   { id: "1", titulo: "Rock in Rio", desc: "O maior festival de música e entretenimento do mundo." },
   { id: "2", titulo: "Lollapalooza Brasil", desc: "Festival de música alternativa e cultura pop." },
@@ -20,7 +19,7 @@ const EVENTOS = [
 ];
 
 export default function HomeScreen() {
-  const router = useRouter(); // Inicializa o roteador
+  const router = useRouter();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -33,10 +32,11 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity 
             style={styles.card} 
-            activeOpacity={0.7} // Adiciona um feedback visual suave ao clicar
+            activeOpacity={0.7} 
             onPress={() => 
               router.push({
-                pathname: "/DetalhesItem", // Nome do arquivo de destino
+                // O "../" sai da pasta (tabs) para achar o arquivo na raiz da pasta app
+                pathname: "../DetalhesItem", 
                 params: { 
                   eventoId: item.id, 
                   titulo: item.titulo, 
