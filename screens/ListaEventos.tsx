@@ -1,12 +1,15 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { FlatList, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StatusBar, StyleSheet, Text, View } from 'react-native';
 
-import CardEvento from '../../components/CardEvento';
-import { EVENTOS } from '../../data/eventos';
+import CardEvento from '../components/CardEvento';
+import { EVENTOS } from '../data/eventos';
 
-export default function HomeScreen() {
+export default function ListaEventos() {
+  const navigation = useNavigation<any>();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#8A1538" />
       
       <View style={styles.header}>
@@ -17,21 +20,27 @@ export default function HomeScreen() {
       <FlatList
         data={EVENTOS}
         keyExtractor={(item) => item.id}
-        // Agora só passamos o "item", sem funções de clique
-        renderItem={({ item }) => <CardEvento item={item} />} 
-        contentContainerStyle={styles.lista}
+        renderItem={({ item }) => (
+          <CardEvento 
+            item={item} 
+            aoPressionar={() => navigation.navigate('DetalhesItem', item)} 
+          />
+        )}
+        // O segredo do scroll está nestas duas linhas abaixo:
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 40, flexGrow: 1 }}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1, 
     backgroundColor: '#F8F9FA',
   },
   header: {
-    backgroundColor: '#8A1538', // GRENÁ
+    backgroundColor: '#8A1538',
     paddingVertical: 35,
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -44,16 +53,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 24,
     fontWeight: 'bold',
-    letterSpacing: 0.5,
   },
   subHeader: {
     color: '#D1D1D1',
     fontSize: 14,
     marginTop: 6,
-    fontWeight: '500',
-  },
-  lista: {
-    padding: 16,
-    paddingBottom: 40,
-  },
+  }
 });
