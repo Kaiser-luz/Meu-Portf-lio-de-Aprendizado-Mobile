@@ -24,7 +24,7 @@ const EventoCard = ({ evento, onPress }: Props) => {
         <Text style={styles.descricao} numberOfLines={2}>{evento.descricao}</Text>
 
         <View style={styles.rodape}>
-          <Text style={styles.local}>📍 {evento.local}</Text>
+          <Text style={styles.local}> {evento.local}</Text>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{evento.ingresso}</Text>
           </View>
