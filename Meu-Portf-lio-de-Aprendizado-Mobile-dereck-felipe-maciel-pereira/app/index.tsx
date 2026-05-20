@@ -1,23 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, ActivityIndicator,
-  FlatList, TextInput, TouchableOpacity, ScrollView,
-} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput, TouchableOpacity,
+  View,
+} from 'react-native';
 import EventoCard from '../constants/EventoCard';
-import api from '../services/api';
 import { Evento } from '../dados';
+import api from '../services/api';
 
 const CATEGORIAS = ['Todos', 'Música', 'Arte', 'Gastronomia', 'Tecnologia', 'Esporte'];
 
 const CORES: Record<string, string> = {
-  'Música':      '#7B61FF',
-  'Arte':        '#FF9800',
+  'Música': '#7B61FF',
+  'Arte': '#FF9800',
   'Gastronomia': '#FF6B35',
-  'Tecnologia':  '#00BCD4',
-  'Esporte':     '#4CAF50',
+  'Tecnologia': '#00BCD4',
+  'Esporte': '#4CAF50',
+};
+
+// Formata data ISO para formato legível
+const formatarData = (dataStr: string): string => {
+  try {
+    const data = new Date(dataStr);
+    if (isNaN(data.getTime())) return dataStr;
+    return data.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return dataStr;
+  }
 };
 
 export default function Explorar() {
@@ -42,7 +62,12 @@ export default function Explorar() {
     try {
       setIsLoading(true);
       const response = await api.get('/eventos');
-      setEventos(response.data);
+      // Formata a data de cada evento ao carregar
+      const dadosFormatados = response.data.map((e: Evento) => ({
+        ...e,
+        data: formatarData(e.data),
+      }));
+      setEventos(dadosFormatados);
     } catch (err) {
       setError('Não foi possível carregar os eventos.');
     } finally {
@@ -110,32 +135,33 @@ export default function Explorar() {
       </View>
 
       {/* Filtro por categoria */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filtroScroll}
-        contentContainerStyle={styles.filtroContent}
-      >
-        {CATEGORIAS.map((cat) => (
-          <TouchableOpacity
-            key={cat}
-            style={[
-              styles.filtroBtn,
-              categoriaSelecionada === cat && styles.filtroBtnAtivo,
-            ]}
-            onPress={() => setCategoriaSelecionada(cat)}
-          >
-            <Text
+      <View style={styles.filtroWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtroContent}
+        >
+          {CATEGORIAS.map((cat) => (
+            <TouchableOpacity
+              key={cat}
               style={[
-                styles.filtroText,
-                categoriaSelecionada === cat && styles.filtroTextAtivo,
+                styles.filtroBtn,
+                categoriaSelecionada === cat && styles.filtroBtnAtivo,
               ]}
+              onPress={() => setCategoriaSelecionada(cat)}
             >
-              {cat}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={[
+                  styles.filtroText,
+                  categoriaSelecionada === cat && styles.filtroTextAtivo,
+                ]}
+              >
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Lista */}
       <FlatList
@@ -166,6 +192,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#1E1E2E',
     margin: 16,
+    marginBottom: 8,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -173,8 +200,16 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, color: '#F0EAD6', fontSize: 14 },
 
-  filtroScroll: { maxHeight: 44 },
-  filtroContent: { paddingHorizontal: 16, gap: 8 },
+  // Filtro corrigido — sem maxHeight que cortava os botões
+  filtroWrapper: {
+    height: 52,
+    marginBottom: 8,
+  },
+  filtroContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+    alignItems: 'center',
+  },
   filtroBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,
