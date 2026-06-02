@@ -16,16 +16,16 @@ import { Evento } from '../dados';
 import api from '../services/api';
 
 const CORES: Record<string, string> = {
-  'Música':      '#7B61FF',
-  'Arte':        '#FF9800',
-  'Gastronomia': '#FF6B35',
-  'Tecnologia':  '#00BCD4',
-  'Esporte':     '#4CAF50',
+  'Música':      '#A78BFA',
+  'Arte':        '#34D399',
+  'Gastronomia': '#F472B6',
+  'Tecnologia':  '#38BDF8',
+  'Esporte':     '#FB923C',
 };
 
 const CORES_PADRAO = [
-  '#7B61FF','#E91E8C','#FF6B35','#00BCD4',
-  '#4CAF50','#FF9800','#9C27B0','#E24B4A',
+  '#A78BFA','#34D399','#F472B6','#38BDF8',
+  '#FB923C','#FBBF24','#60A5FA','#F87171',
 ];
 
 const formatarData = (dataStr: string): string => {
@@ -64,7 +64,6 @@ export default function Explorar() {
       }));
       setEventos(dadosFormatados);
 
-      // Extrai categorias únicas dinamicamente da API
       const cats: string[] = ['Todos', ...Array.from(
         new Set(response.data.map((e: Evento) => e.categoria).filter(Boolean))
       ) as string[]];
@@ -95,7 +94,7 @@ export default function Explorar() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+        <ActivityIndicator size="large" color="#A78BFA" />
         <Text style={styles.loadingText}>Carregando eventos...</Text>
       </View>
     );
@@ -117,17 +116,17 @@ export default function Explorar() {
       <StatusBar style="light" />
 
       <View style={styles.searchRow}>
-        <Ionicons name="search" size={18} color="#666" style={styles.searchIcon} />
+        <Ionicons name="search" size={18} color="#6B7280" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar evento..."
-          placeholderTextColor="#555"
+          placeholderTextColor="#4B5563"
           value={busca}
           onChangeText={setBusca}
         />
         {busca.length > 0 && (
           <TouchableOpacity onPress={() => setBusca('')}>
-            <Ionicons name="close-circle" size={18} color="#666" />
+            <Ionicons name="close-circle" size={18} color="#6B7280" />
           </TouchableOpacity>
         )}
       </View>
@@ -140,7 +139,7 @@ export default function Explorar() {
         >
           {categorias.map((cat, index) => {
             const ativo = categoriaSelecionada === cat;
-            const cor = cat === 'Todos' ? '#FF6B35' : getCorCategoria(cat, index);
+            const cor = cat === 'Todos' ? '#A78BFA' : getCorCategoria(cat, index);
             return (
               <TouchableOpacity
                 key={cat}
@@ -182,21 +181,23 @@ export default function Explorar() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#13131F' },
+  root: { flex: 1, backgroundColor: '#0D0D14' },
   listContent: { paddingBottom: 40, paddingTop: 8 },
 
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1E2E',
+    backgroundColor: '#16161F',
     margin: 16,
     marginBottom: 8,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderWidth: 1,
+    borderColor: '#1F1F2E',
   },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, color: '#F0EAD6', fontSize: 14 },
+  searchInput: { flex: 1, color: '#E2E8F0', fontSize: 14 },
 
   filtroWrapper: { height: 52, marginBottom: 8 },
   filtroContent: { paddingHorizontal: 16, gap: 8, alignItems: 'center' },
@@ -204,18 +205,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#1E1E2E',
+    backgroundColor: '#16161F',
     borderWidth: 1,
-    borderColor: '#2E2E3E',
+    borderColor: '#1F1F2E',
   },
-  filtroText: { color: '#888', fontSize: 13 },
+  filtroText: { color: '#6B7280', fontSize: 13 },
   filtroTextAtivo: { color: '#fff', fontWeight: 'bold' },
 
-  emptyText: { color: '#555', textAlign: 'center', marginTop: 40, fontSize: 14 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#13131F' },
-  loadingText: { marginTop: 12, fontSize: 15, color: '#666' },
-  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#13131F', padding: 24 },
-  errorText: { fontSize: 15, color: '#FF6B35', textAlign: 'center', marginBottom: 16 },
-  retryBtn: { backgroundColor: '#FF6B35', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
+  emptyText: { color: '#4B5563', textAlign: 'center', marginTop: 40, fontSize: 14 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D0D14' },
+  loadingText: { marginTop: 12, fontSize: 15, color: '#6B7280' },
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D0D14', padding: 24 },
+  errorText: { fontSize: 15, color: '#F472B6', textAlign: 'center', marginBottom: 16 },
+  retryBtn: { backgroundColor: '#A78BFA', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
   retryText: { color: '#fff', fontWeight: 'bold' },
 });

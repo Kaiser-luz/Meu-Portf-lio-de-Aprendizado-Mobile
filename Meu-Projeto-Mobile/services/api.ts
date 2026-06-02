@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://6a050d08aa826ca75c0971ae.mockapi.io/api/v1',
+  baseURL: 'https://6a18db4d489e471575194753.mockapi.io/eventos',
 });
 
 export default api;
