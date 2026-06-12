@@ -15,25 +15,25 @@ import EventoCard from '../constants/EventoCard';
 import { Evento } from '../dados';
 import api from '../services/api';
 
-const CATEGORIAS = ['Todos', 'Música', 'Arte', 'Gastronomia', 'Tecnologia', 'Esporte'];
-
 const CORES: Record<string, string> = {
-  'Música': '#7B61FF',
-  'Arte': '#FF9800',
+  'Música':      '#7B61FF',
+  'Arte':        '#FF9800',
   'Gastronomia': '#FF6B35',
-  'Tecnologia': '#00BCD4',
-  'Esporte': '#4CAF50',
+  'Tecnologia':  '#00BCD4',
+  'Esporte':     '#4CAF50',
 };
 
-// Formata data ISO para formato legível
+const CORES_PADRAO = [
+  '#7B61FF','#E91E8C','#FF6B35','#00BCD4',
+  '#4CAF50','#FF9800','#9C27B0','#E24B4A',
+];
+
 const formatarData = (dataStr: string): string => {
   try {
     const data = new Date(dataStr);
     if (isNaN(data.getTime())) return dataStr;
     return data.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
+      day: '2-digit', month: 'short', year: 'numeric',
     });
   } catch {
     return dataStr;
@@ -45,30 +45,31 @@ export default function Explorar() {
 
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [filtrados, setFiltrados] = useState<Evento[]>([]);
+  const [categorias, setCategorias] = useState<string[]>(['Todos']);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('Todos');
 
-  useEffect(() => {
-    fetchEventos();
-  }, []);
-
-  useEffect(() => {
-    filtrar();
-  }, [busca, categoriaSelecionada, eventos]);
+  useEffect(() => { fetchEventos(); }, []);
+  useEffect(() => { filtrar(); }, [busca, categoriaSelecionada, eventos]);
 
   const fetchEventos = async () => {
     try {
       setIsLoading(true);
       const response = await api.get('/eventos');
-      // Formata a data de cada evento ao carregar
       const dadosFormatados = response.data.map((e: Evento) => ({
         ...e,
         data: formatarData(e.data),
       }));
       setEventos(dadosFormatados);
-    } catch (err) {
+
+      // Extrai categorias únicas dinamicamente da API
+      const cats: string[] = ['Todos', ...Array.from(
+        new Set(response.data.map((e: Evento) => e.categoria).filter(Boolean))
+      ) as string[]];
+      setCategorias(cats);
+    } catch {
       setError('Não foi possível carregar os eventos.');
     } finally {
       setIsLoading(false);
@@ -77,21 +78,19 @@ export default function Explorar() {
 
   const filtrar = () => {
     let resultado = [...eventos];
-
     if (categoriaSelecionada !== 'Todos') {
-      resultado = resultado.filter(e =>
-        e.categoria?.toLowerCase().includes(categoriaSelecionada.toLowerCase())
-      );
+      resultado = resultado.filter(e => e.categoria === categoriaSelecionada);
     }
-
     if (busca.trim()) {
       resultado = resultado.filter(e =>
         e.nome?.toLowerCase().includes(busca.toLowerCase())
       );
     }
-
     setFiltrados(resultado);
   };
+
+  const getCorCategoria = (cat: string, index: number) =>
+    CORES[cat] || CORES_PADRAO[index % CORES_PADRAO.length];
 
   if (isLoading) {
     return (
@@ -117,7 +116,6 @@ export default function Explorar() {
     <View style={styles.root}>
       <StatusBar style="light" />
 
-      {/* Barra de busca */}
       <View style={styles.searchRow}>
         <Ionicons name="search" size={18} color="#666" style={styles.searchIcon} />
         <TextInput
@@ -134,36 +132,33 @@ export default function Explorar() {
         )}
       </View>
 
-      {/* Filtro por categoria */}
       <View style={styles.filtroWrapper}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filtroContent}
         >
-          {CATEGORIAS.map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              style={[
-                styles.filtroBtn,
-                categoriaSelecionada === cat && styles.filtroBtnAtivo,
-              ]}
-              onPress={() => setCategoriaSelecionada(cat)}
-            >
-              <Text
+          {categorias.map((cat, index) => {
+            const ativo = categoriaSelecionada === cat;
+            const cor = cat === 'Todos' ? '#FF6B35' : getCorCategoria(cat, index);
+            return (
+              <TouchableOpacity
+                key={cat}
                 style={[
-                  styles.filtroText,
-                  categoriaSelecionada === cat && styles.filtroTextAtivo,
+                  styles.filtroBtn,
+                  ativo && { backgroundColor: cor, borderColor: cor },
                 ]}
+                onPress={() => setCategoriaSelecionada(cat)}
               >
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text style={[styles.filtroText, ativo && styles.filtroTextAtivo]}>
+                  {cat}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
-      {/* Lista */}
       <FlatList
         data={filtrados}
         keyExtractor={(item) => item.id}
@@ -172,9 +167,12 @@ export default function Explorar() {
         ListEmptyComponent={
           <Text style={styles.emptyText}>Nenhum evento encontrado.</Text>
         }
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <EventoCard
-            evento={{ ...item, tagColor: CORES[item.categoria] || '#FF6B35' }}
+            evento={{
+              ...item,
+              tagColor: getCorCategoria(item.categoria, index),
+            }}
             onPress={() => router.push(`/detalhes/${item.id}` as any)}
           />
         )}
@@ -200,16 +198,8 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, color: '#F0EAD6', fontSize: 14 },
 
-  // Filtro corrigido — sem maxHeight que cortava os botões
-  filtroWrapper: {
-    height: 52,
-    marginBottom: 8,
-  },
-  filtroContent: {
-    paddingHorizontal: 16,
-    gap: 8,
-    alignItems: 'center',
-  },
+  filtroWrapper: { height: 52, marginBottom: 8 },
+  filtroContent: { paddingHorizontal: 16, gap: 8, alignItems: 'center' },
   filtroBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -218,15 +208,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2E2E3E',
   },
-  filtroBtnAtivo: { backgroundColor: '#FF6B35', borderColor: '#FF6B35' },
   filtroText: { color: '#888', fontSize: 13 },
   filtroTextAtivo: { color: '#fff', fontWeight: 'bold' },
 
   emptyText: { color: '#555', textAlign: 'center', marginTop: 40, fontSize: 14 },
-
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#13131F' },
   loadingText: { marginTop: 12, fontSize: 15, color: '#666' },
-
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#13131F', padding: 24 },
   errorText: { fontSize: 15, color: '#FF6B35', textAlign: 'center', marginBottom: 16 },
   retryBtn: { backgroundColor: '#FF6B35', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },

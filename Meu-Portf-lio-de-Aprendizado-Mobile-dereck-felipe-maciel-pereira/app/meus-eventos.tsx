@@ -1,14 +1,20 @@
-import React, { useState, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity,
-  TextInput, Alert, Modal, ScrollView, ActivityIndicator,
-} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Modal, ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-import api from '../services/api';
 import { Evento } from '../dados';
+import api from '../services/api';
 
 const FORM_VAZIO = {
   nome: '', descricao: '', categoria: '',
@@ -21,9 +27,12 @@ export default function MeusEventos() {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [modalVisivel, setModalVisivel] = useState(false);
+  const [modalConfirmar, setModalConfirmar] = useState(false);
+  const [eventoParaExcluir, setEventoParaExcluir] = useState<Evento | null>(null);
   const [editando, setEditando] = useState<Evento | null>(null);
   const [form, setForm] = useState(FORM_VAZIO);
   const [salvando, setSalvando] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,7 +57,7 @@ export default function MeusEventos() {
       const response = await api.get('/eventos');
       setEventos(response.data);
     } catch {
-      Alert.alert('Erro', 'Não foi possível carregar os eventos.');
+      // silencioso
     } finally {
       setIsLoading(false);
     }
@@ -76,52 +85,43 @@ export default function MeusEventos() {
   };
 
   const salvar = async () => {
-    if (!form.nome.trim() || !form.descricao.trim()) {
-      Alert.alert('Atenção', 'Nome e descrição são obrigatórios.');
-      return;
-    }
-
+    if (!form.nome.trim() || !form.descricao.trim()) return;
     try {
       setSalvando(true);
       if (editando) {
-        // PUT — editar
         await api.put(`/eventos/${editando.id}`, form);
       } else {
-        // POST — criar
         await api.post('/eventos', form);
       }
       setModalVisivel(false);
       fetchEventos();
     } catch {
-      Alert.alert('Erro', 'Não foi possível salvar o evento.');
+      // silencioso
     } finally {
       setSalvando(false);
     }
   };
 
-  const excluir = (evento: Evento) => {
-    Alert.alert(
-      'Excluir evento',
-      `Tem certeza que deseja excluir "${evento.nome}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.delete(`/eventos/${evento.id}`);
-              fetchEventos();
-            } catch {
-              Alert.alert('Erro', 'Não foi possível excluir o evento.');
-            }
-          },
-        },
-      ]
-    );
+  const pedirConfirmacaoExcluir = (evento: Evento) => {
+    setEventoParaExcluir(evento);
+    setModalConfirmar(true);
   };
 
-  // Tela de bloqueio para não logados
+  const confirmarExcluir = async () => {
+    if (!eventoParaExcluir) return;
+    try {
+      setExcluindo(true);
+      await api.delete(`/eventos/${eventoParaExcluir.id}`);
+      setModalConfirmar(false);
+      setEventoParaExcluir(null);
+      fetchEventos();
+    } catch {
+      // silencioso
+    } finally {
+      setExcluindo(false);
+    }
+  };
+
   if (!logado) {
     return (
       <View style={styles.bloqueio}>
@@ -165,22 +165,47 @@ export default function MeusEventos() {
               <Text style={styles.itemLocal} numberOfLines={1}>📍 {item.local}</Text>
             </View>
             <View style={styles.itemAcoes}>
-              <TouchableOpacity
-                style={styles.editBtn}
-                onPress={() => abrirEditar(item)}
-              >
+              <TouchableOpacity style={styles.editBtn} onPress={() => abrirEditar(item)}>
                 <Ionicons name="pencil" size={16} color="#00BCD4" />
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deleteBtn}
-                onPress={() => excluir(item)}
-              >
+              <TouchableOpacity style={styles.deleteBtn} onPress={() => pedirConfirmacaoExcluir(item)}>
                 <Ionicons name="trash" size={16} color="#E24B4A" />
               </TouchableOpacity>
             </View>
           </View>
         )}
       />
+
+      {/* Modal confirmação excluir */}
+      <Modal visible={modalConfirmar} transparent animationType="fade">
+        <View style={styles.overlay}>
+          <View style={styles.confirmarBox}>
+            <Ionicons name="warning-outline" size={36} color="#E24B4A" style={{ marginBottom: 12 }} />
+            <Text style={styles.confirmarTitulo}>Excluir evento?</Text>
+            <Text style={styles.confirmarSub} numberOfLines={2}>
+              "{eventoParaExcluir?.nome}"
+            </Text>
+            <View style={styles.confirmarBtns}>
+              <TouchableOpacity
+                style={styles.cancelarBtn}
+                onPress={() => { setModalConfirmar(false); setEventoParaExcluir(null); }}
+              >
+                <Text style={styles.cancelarText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.excluirBtn, excluindo && { opacity: 0.6 }]}
+                onPress={confirmarExcluir}
+                disabled={excluindo}
+              >
+                {excluindo
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <Text style={styles.excluirText}>Excluir</Text>
+                }
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Modal criar / editar */}
       <Modal visible={modalVisivel} animationType="slide" presentationStyle="pageSheet">
@@ -240,24 +265,15 @@ const styles = StyleSheet.create({
   listContent: { padding: 16, paddingBottom: 40 },
 
   criarBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#FF6B35',
-    borderRadius: 12,
-    paddingVertical: 14,
-    justifyContent: 'center',
-    marginBottom: 16,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#FF6B35', borderRadius: 12,
+    paddingVertical: 14, justifyContent: 'center', marginBottom: 16,
   },
   criarText: { color: '#fff', fontWeight: 'bold', fontSize: 15 },
 
   itemCard: {
-    backgroundColor: '#1E1E2E',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: '#1E1E2E', borderRadius: 12, padding: 14,
+    marginBottom: 10, flexDirection: 'row', alignItems: 'center',
   },
   itemInfo: { flex: 1 },
   itemNome: { color: '#F0EAD6', fontSize: 15, fontWeight: 'bold', marginBottom: 4 },
@@ -267,23 +283,42 @@ const styles = StyleSheet.create({
   deleteBtn: { backgroundColor: '#2E1A1A', padding: 8, borderRadius: 8 },
 
   emptyText: { color: '#555', textAlign: 'center', marginTop: 40 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#13131F' },
 
   bloqueio: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#13131F', padding: 32 },
   bloqueioTitulo: { color: '#F0EAD6', fontSize: 20, fontWeight: 'bold', marginTop: 16, marginBottom: 8 },
   bloqueioSub: { color: '#666', fontSize: 14, textAlign: 'center', lineHeight: 22 },
 
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#13131F' },
+  // Modal confirmação
+  overlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center', alignItems: 'center', padding: 32,
+  },
+  confirmarBox: {
+    backgroundColor: '#1E1E2E', borderRadius: 20, padding: 28,
+    alignItems: 'center', width: '100%', maxWidth: 340,
+    borderWidth: 1, borderColor: '#2E2E3E',
+  },
+  confirmarTitulo: { color: '#F0EAD6', fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+  confirmarSub: { color: '#888', fontSize: 14, textAlign: 'center', marginBottom: 24 },
+  confirmarBtns: { flexDirection: 'row', gap: 12, width: '100%' },
+  cancelarBtn: {
+    flex: 1, backgroundColor: '#2E2E3E', borderRadius: 12,
+    paddingVertical: 14, alignItems: 'center',
+  },
+  cancelarText: { color: '#F0EAD6', fontWeight: 'bold' },
+  excluirBtn: {
+    flex: 1, backgroundColor: '#E24B4A', borderRadius: 12,
+    paddingVertical: 14, alignItems: 'center',
+  },
+  excluirText: { color: '#fff', fontWeight: 'bold' },
 
-  // Modal
+  // Modal criar/editar
   modal: { flex: 1, backgroundColor: '#13131F' },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#1A1A2E',
-    borderBottomWidth: 1,
-    borderBottomColor: '#2E2E3E',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    padding: 20, backgroundColor: '#1A1A2E',
+    borderBottomWidth: 1, borderBottomColor: '#2E2E3E',
   },
   modalTitulo: { color: '#F0EAD6', fontSize: 18, fontWeight: 'bold' },
   modalForm: { padding: 20 },
@@ -291,21 +326,13 @@ const styles = StyleSheet.create({
   campoContainer: { marginBottom: 16 },
   campoLabel: { color: '#888', fontSize: 11, fontWeight: 'bold', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' },
   campoInput: {
-    backgroundColor: '#1E1E2E',
-    color: '#F0EAD6',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: '#2E2E3E',
+    backgroundColor: '#1E1E2E', color: '#F0EAD6', borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 14,
+    borderWidth: 1, borderColor: '#2E2E3E',
   },
   salvarBtn: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
+    backgroundColor: '#FF6B35', borderRadius: 12,
+    paddingVertical: 16, alignItems: 'center', marginTop: 8,
   },
   salvarText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });
