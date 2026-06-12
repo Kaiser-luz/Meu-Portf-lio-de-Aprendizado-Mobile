@@ -1,113 +1,141 @@
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import ErrorMessage from '@/components/ErrorMessage';
 import EventoCard from '@/components/EventoCard';
 import Loading from '@/components/Loading';
-import api from '@/services/api';
+import { CATEGORIAS } from '@/data/categorias';
+import { useEventos } from '@/context/EventosContext';
+import type { EventoCategoria } from '@/types/evento';
 
-type Evento = {
-  id: string;
-  titulo: string;
-  data: string;
-  hora: string;
-  local: string;
-  cidade: string;
-  estado: string;
-  endereco: string;
-  descricao: string;
-  imagem: string;
-  link: string;
-};
-
-export default function HomeScreen() {
-  const [eventos, setEventos] = useState<Evento[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
+export default function ExplorarScreen() {
+  const {
+    eventos,
+    isLoadingEventos,
+    erroEventos,
+    erroLocalizacao,
+    localizacaoReal,
+    refreshEventos,
+    alternarInteresse,
+    isInteresse,
+  } = useEventos();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState<EventoCategoria>('todos');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    async function buscarEventos() {
-      try {
-        const response = await api.get('/events.json', {
-          params: {
-            apikey: 'q9uh0aSWLq7gVjJLRof6UeJ0B7oeafQm',
-            countryCode: 'BR',
-            classificationName: 'music',
-            size: 10,
-          },
-        });
+    const timerId = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 450);
 
-        const dadosAdaptados: Evento[] =
-          response.data._embedded?.events?.map((item: any) => {
-            const venue = item._embedded?.venues?.[0];
+    return () => clearTimeout(timerId);
+  }, [searchTerm]);
 
-            return {
-              id: item.id,
-              titulo: item.name,
-              data: item.dates?.start?.localDate || 'Data a confirmar',
-              hora: item.dates?.start?.localTime || 'Horário a confirmar',
-              local: venue?.name || 'Local não informado',
-              cidade: venue?.city?.name || 'Cidade não informada',
-              estado: venue?.state?.name || 'Estado não informado',
-              endereco: venue?.address?.line1 || 'Endereço não informado',
-              imagem: item.images?.[0]?.url || '',
-              link: item.url || '',
-              descricao:
-                item.info ||
-                item.pleaseNote ||
-                `${item.name} acontecerá em ${venue?.city?.name || 'uma cidade especial'}, no local ${venue?.name || 'informado pela Ticketmaster'}. Confira data, local e mais detalhes deste evento musical.`,
-            };
-          }) || [];
+  const eventosFiltrados = useMemo(() => {
+    const termo = debouncedSearchTerm.trim().toLowerCase();
 
-        setEventos(dadosAdaptados);
-      } catch (error) {
-        setErro('Não foi possível carregar os eventos.');
-      } finally {
-        setIsLoading(false);
-      }
-    }
+    return eventos.filter((evento) => {
+      const passaCategoria =
+        categoriaSelecionada === 'todos' || evento.categoria === categoriaSelecionada;
+      const passaBusca = !termo || evento.titulo.toLowerCase().includes(termo);
 
-    buscarEventos();
-  }, []);
+      return passaCategoria && passaBusca;
+    });
+  }, [eventos, categoriaSelecionada, debouncedSearchTerm]);
 
-  if (isLoading) {
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshEventos();
+    setIsRefreshing(false);
+  };
+
+  if (isLoadingEventos && eventos.length === 0) {
     return <Loading />;
   }
 
-  if (erro) {
-    return <ErrorMessage mensagem={erro} />;
+  if (!isLoadingEventos && eventos.length === 0) {
+    return <ErrorMessage mensagem="Nenhum evento foi encontrado." />;
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.topo}>
-        <Text style={styles.tituloPrincipal}>Festivais no Brasil</Text>
+        <Text style={styles.tituloPrincipal}>Eventos e Festivais</Text>
         <Text style={styles.subtitulo}>
-          Descubra shows, eventos e festivais a qualquer momento
+          Descubra eventos por tipo, busque pelo nome e veja os mais proximos primeiro.
         </Text>
       </View>
 
+      <View style={styles.buscaContainer}>
+        <TextInput
+          style={styles.buscaInput}
+          placeholder="Pesquisar pelo nome do evento"
+          placeholderTextColor="#94A3B8"
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+        />
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoriasContainer}>
+        {CATEGORIAS.map((categoria) => {
+          const selected = categoriaSelecionada === categoria.key;
+
+          return (
+            <TouchableOpacity
+              key={categoria.key}
+              style={[styles.categoriaBotao, selected && styles.categoriaBotaoAtivo]}
+              onPress={() => setCategoriaSelecionada(categoria.key)}>
+              <Text style={[styles.categoriaTexto, selected && styles.categoriaTextoAtivo]}>
+                {categoria.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {erroEventos ? <Text style={styles.aviso}>{erroEventos}</Text> : null}
+      {erroLocalizacao ? <Text style={styles.aviso}>{erroLocalizacao}</Text> : null}
+      <Text style={styles.ordenacao}>
+        Lista ordenada por proximidade {localizacaoReal ? 'da sua localizacao atual.' : 'do ponto de referencia.'}
+      </Text>
+
       <FlatList
-        data={eventos}
+        data={eventosFiltrados}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <EventoCard
-            titulo={item.titulo}
-            data={item.data}
-            local={item.local}
-            descricao={item.descricao}
+            evento={item}
+            isInteresse={isInteresse(item.id)}
+            onToggleInteresse={() => alternarInteresse(item.id)}
             onPress={() =>
               router.push({
                 pathname: '/detalhes-item',
-                params: {
-                  evento: JSON.stringify(item),
-                },
+                params: { eventoId: item.id },
               })
             }
           />
         )}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
         contentContainerStyle={styles.lista}
+        ListEmptyComponent={
+          <Text style={styles.semResultados}>
+            Nenhum evento encontrado para os filtros selecionados.
+          </Text>
+        }
       />
     </View>
   );
@@ -121,19 +149,20 @@ const styles = StyleSheet.create({
   },
   lista: {
     padding: 20,
-    paddingBottom: 30,
+    paddingTop: 10,
+    paddingBottom: 90,
   },
   topo: {
     backgroundColor: '#2563EB',
     borderRadius: 22,
     padding: 24,
     marginHorizontal: 20,
-    marginBottom: 18,
+    marginBottom: 14,
     borderWidth: 2,
     borderColor: '#FACC15',
   },
   tituloPrincipal: {
-    fontSize: 32,
+    fontSize: 31,
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -144,5 +173,64 @@ const styles = StyleSheet.create({
     color: '#DBEAFE',
     textAlign: 'center',
     lineHeight: 22,
+  },
+  buscaContainer: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  buscaInput: {
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    color: '#0F172A',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  categoriasContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    gap: 10,
+  },
+  categoriaBotao: {
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    backgroundColor: '#1E293B',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  categoriaBotaoAtivo: {
+    backgroundColor: '#FACC15',
+    borderColor: '#FACC15',
+  },
+  categoriaTexto: {
+    color: '#E2E8F0',
+    fontWeight: 'bold',
+  },
+  categoriaTextoAtivo: {
+    color: '#0F172A',
+  },
+  aviso: {
+    color: '#FDE68A',
+    backgroundColor: '#422006',
+    marginHorizontal: 20,
+    marginBottom: 8,
+    borderRadius: 12,
+    padding: 10,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  ordenacao: {
+    color: '#CBD5E1',
+    marginHorizontal: 20,
+    marginBottom: 2,
+    fontSize: 12,
+  },
+  semResultados: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginTop: 30,
+    fontSize: 16,
   },
 });
