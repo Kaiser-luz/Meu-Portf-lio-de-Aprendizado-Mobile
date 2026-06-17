@@ -6,18 +6,6 @@ Ele consiste em uma plataforma mobile completa para a exploração e gestão de 
 
 ---
 
-## 👥 Integrantes do Grupo
-*Insira abaixo os nomes e RAs dos integrantes do seu grupo para a avaliação do professor:*
-- **Integrante 1**: [Nome Completo] (RA: [Número])
-- **Integrante 2**: [Nome Completo] (RA: [Número])
-- **Integrante 3**: [Nome Completo] (RA: [Número])
-- **Integrante 4**: [Nome Completo] (RA: [Número])
-
-**Professor Orientador**: [Nome do Professor]  
-**Disciplina**: [Nome da Disciplina / Ex: Desenvolvimento de Aplicações Mobile]
-
----
-
 ## 🚀 Funcionalidades do Aplicativo
 
 ### 1. 🔍 Explorar Eventos (`app/index.tsx`)
